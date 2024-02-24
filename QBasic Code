@@ -1,0 +1,83 @@
+SCREEN 13
+
+CONST del = 0.02
+CONST lowerbound = 100
+CONST upperbound = 200
+CONST launchtime = 25
+CONST delete = 0
+
+DIM SHARED xmax, ymax
+xmax = 320
+ymax = 200
+
+RANDOMIZE TIMER
+
+DO
+    col = INT(RND * 255) + 1
+    a = RND * xmax
+    B = ymax
+
+    G = INT(RND * (upperbound - lowerbound)) + lowerbound
+    REDIM l1(1 TO G), l2(1 TO G), l3(1 TO G), l4(1 TO G)
+
+    PSET (a, B), col
+    IF delete = 1 THEN LINE (a - ainc - ainc, B - binc - (binc - 1.2))-(a - ainc, B - binc), 0
+
+    ainc = RND * 20 - 10
+    binc = RND * -10 - 5
+
+    FOR c = 1 TO launchtime
+        binc = binc + IIF(SCREEN = 13, 0.5, 1.2)
+        a = a + ainc
+        B = B + binc
+
+        IF a < 0 THEN a = 0: ainc = -ainc
+        IF a > xmax THEN a = xmax: ainc = -ainc
+        IF B < 0 THEN B = 0: binc = -binc
+        IF B > ymax THEN B = ymax: binc = -binc
+
+        LINE -(a, B), col
+        _DELAY del
+    NEXT
+
+    FOR c = 1 TO G
+        l1(c) = a
+        l2(c) = B
+        l3(c) = RND * IIF(SCREEN = 13, 5, 10) - IIF(SCREEN = 13, 2.5, 5)
+        l4(c) = RND * IIF(SCREEN = 13, -5, -10) + IIF(SCREEN = 13, 2.5, 5)
+    NEXT
+
+    FOR c = 1 TO launchtime
+        FOR z = 1 TO G
+            PSET (l1(z), l2(z)), col
+            IF delete = 1 THEN LINE (l1(z) - l3(z), l2(z) - l4(z))-(l1(z), l2(z)), 0
+            l4(z) = l4(z) + IIF(SCREEN = 13, 0.1, 0.2)
+            l1(z) = l1(z) + l3(z)
+            l2(z) = l2(z) + l4(z)
+
+            IF l1(z) < 0 THEN l1(z) = 0: l3(z) = 0.5 * -l3(z)
+            IF l1(z) > xmax THEN l1(z) = xmax: l3(z) = 0.5 * -l3(z)
+            IF l2(z) < 0 THEN l2(z) = 0: l4(z) = 0.5 * -l4(z)
+            IF l2(z) > ymax THEN l2(z) = ymax: l4(z) = 0.5 * -l4(z)
+
+            LINE -(l1(z), l2(z)), col
+        NEXT
+        _DELAY del
+    NEXT
+
+    LINE (l1(G) - l3(G), l2(G) - l4(G))-(l1(G), l2(G)), 0
+
+    K$ = INKEY$
+    IF K$ = CHR$(13) THEN CLS
+
+LOOP UNTIL FALSE
+
+SUB _DELAY (seconds!)
+    ' Replacement for the original delay subroutine
+    ' Delay implementation using TIMER
+    LOCAL start_time
+    start_time = TIMER
+    DO WHILE TIMER < start_time + seconds!
+        ' waiting...
+    LOOP
+END SUB
